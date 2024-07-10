@@ -79,9 +79,14 @@ def main():
     # Device configuration
     device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
+    environment = config.environment
+
     # Create the model
-    #model = CorrectionUNet(in_channels=3, out_channels=5)
-    model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
+    if environment == "local":
+        model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
+    else:
+        model = CorrectionUNet(in_channels=3, out_channels=5)
+        
     model.to(device)
 
     # Load the trained model weights

@@ -134,8 +134,11 @@ def main():
     test_dataloader = DataLoader(test_dataset, batch_size=config.batch_size, sampler=test_sampler, shuffle=False, num_workers=0)
 
     # Create the model
-    #model = CorrectionUNet(in_channels=3, out_channels=5, dropout=config.dropout)  # 3 input channels, 5 output classes (0-4)
-    model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
+    if environment == 'local':
+        model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
+    else:
+        model = CorrectionUNet(in_channels=3, out_channels=5, dropout=config.dropout)  # 3 input channels, 5 output classes (0-4)
+        
     model = model.to(device)
     print(f"model moved to device: {device} with rank: {rank}")
 
