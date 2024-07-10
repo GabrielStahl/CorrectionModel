@@ -88,7 +88,7 @@ class CorrectionDataset(Dataset):
         return cropped_image
 
     @staticmethod
-    def split_data(data_dir, train_ratio=0.5, val_ratio=0.5, test_ratio=0.0, seed=None):
+    def split_data(data_dir, train_ratio=0.8, val_ratio=0.2, test_ratio=0.0, seed=None):
         random.seed(seed)
         all_patient_folders = [folder for folder in os.listdir(data_dir) 
                                if folder.startswith("UCSF-PDGM-") and "FU" not in folder and "541" not in folder]
