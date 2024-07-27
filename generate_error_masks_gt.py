@@ -35,7 +35,7 @@ def process_patient(patient_folder, pred_seg_dir, data_dir, output_dir):
 def main():
     data_dir = config.data_dir
     pred_seg_dir = os.path.join(data_dir, "predictions")
-    output_dir = os.path.join(data_dir, "error_masks")
+    output_dir = os.path.join(data_dir, "error_masks_train_set")
     os.makedirs(output_dir, exist_ok=True)
 
     patient_folders = [folder for folder in os.listdir(data_dir) 
