@@ -33,17 +33,18 @@ def process_patient(patient_folder, pred_seg_dir, data_dir, output_dir):
     save_nifti(error_mask, output_path)
 
 def main():
-    data_dir = config.data_dir
-    train_dir = config.train_dir
-    pred_seg_dir = os.path.join(data_dir, "predictions_train_set")
-    output_dir = os.path.join(data_dir, "error_masks_train_set")
+    data_dir = config.data_dir 
+    subset_dir = config.val_dir # CHOOSE FROM: train_dir, val_dir
+    data_subset = "val_set" # CHOOSE FROM: train_dir, val_dir
+    pred_seg_dir = os.path.join(data_dir, f"predictions_{data_subset}", "modality_ensemble") 
+    output_dir = os.path.join(data_dir, f"error_masks_{data_subset}") 
     os.makedirs(output_dir, exist_ok=True)
 
-    patient_folders = [folder for folder in os.listdir(train_dir) 
+    patient_folders = [folder for folder in os.listdir(subset_dir) 
                        if folder.startswith("UCSF-PDGM-") and "FU" not in folder and "541" not in folder]
 
     for patient_folder in tqdm(patient_folders, desc="Generating error masks"):
-        process_patient(patient_folder, pred_seg_dir, train_dir, output_dir)
+        process_patient(patient_folder, pred_seg_dir, subset_dir, output_dir)
 
     print(f"Error masks generated and saved in {output_dir}")
 
