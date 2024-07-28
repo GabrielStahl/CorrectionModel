@@ -32,7 +32,7 @@ class CorrectionDataset(Dataset):
 
         # Load original MRI, predicted segmentation, uncertainty map, and error mask
         mri_path = os.path.join(self.data_dir, patient_folder, f"UCSF-PDGM-{patient_number}_{self.modality}.nii.gz")
-        pred_seg_path = os.path.join(config.data_dir, "predictions_train_set", self.UMap, f"segmentation_UCSF-PDGM-{patient_number}.nii.gz")
+        pred_seg_path = os.path.join(config.data_dir, f"predictions_{self.data_subset}", self.UMap, f"segmentation_UCSF-PDGM-{patient_number}.nii.gz")
         uncertainty_path = os.path.join(config.data_dir, f"predictions_{self.data_subset}", self.UMap, f"{self.UMap}_UMap_UCSF-PDGM-{patient_number}.nii.gz")
         error_mask_path = os.path.join(config.data_dir, f"error_masks_{self.data_subset}", f"UCSF-PDGM-{patient_number}_error_mask.nii.gz")
 
