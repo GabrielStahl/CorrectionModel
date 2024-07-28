@@ -92,13 +92,19 @@ def main():
     # Device configuration
     environment = config.environment
 
-    # Split the data into train, validation, and test sets
-    train_folders, val_folders, test_folders = CorrectionDataset.split_data(config.data_dir)
+    # Read argument for saving the model
+    if len(sys.argv) > 1:
+        modelID = sys.argv[1]
+        modality = sys.argv[2]
+        UMap = sys.argv[3] 
+    else:
+        modelID = "correction_model"
+        modality = "T1c_bias"
+        UMap = "modality_ensemble"
 
     # Load the datasets
-    train_dataset = CorrectionDataset(config.data_dir, train_folders)
-    val_dataset = CorrectionDataset(config.data_dir, val_folders)
-    test_dataset = CorrectionDataset(config.data_dir, test_folders)
+    train_dataset = CorrectionDataset(config.train_dir, modality, UMap)
+    val_dataset = CorrectionDataset(config.val_dir, modality, UMap)
 
     # Setup DDP and create distributed samplers if not in local environment
     if environment != 'local':
@@ -115,7 +121,6 @@ def main():
         # Create distributed samplers
         train_sampler = DistributedSampler(train_dataset)
         val_sampler = DistributedSampler(val_dataset, shuffle=False)
-        test_sampler = DistributedSampler(test_dataset, shuffle=False)
     else:
         rank = 0
         world_size = 1
@@ -124,20 +129,20 @@ def main():
         # Set samplers to None
         train_sampler = None
         val_sampler = None
-        test_sampler = None
 
         device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
     # Create data loaders
     train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, sampler=train_sampler, shuffle=(train_sampler is None), num_workers=0)
     val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, sampler=val_sampler, shuffle=False, num_workers=0)
-    test_dataloader = DataLoader(test_dataset, batch_size=config.batch_size, sampler=test_sampler, shuffle=False, num_workers=0)
 
     # Create the model
     if environment == 'local':
         model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
+        print("Using UltraLightCorrectionUNet model for low memory consumption")
     else:
         model = CorrectionUNet(in_channels=3, out_channels=5, dropout=config.dropout)  # 3 input channels, 5 output classes (0-4)
+        print("Using CorrectionUNet model")
         
     model = model.to(device)
     print(f"model moved to device: {device} with rank: {rank}")
@@ -152,12 +157,6 @@ def main():
 
     # Create the GradScaler
     scaler = GradScaler()
-
-    # Read argument for saving the model
-    if len(sys.argv) > 1:
-        modelID = sys.argv[1]
-    else:
-        modelID = "correction_model"
 
     # Training loop
     for epoch in range(config.epochs):
@@ -179,7 +178,7 @@ def main():
     
         # Save the model every 5 epochs
         if (epoch + 1) % 5 == 0 and (environment == 'local' or dist.get_rank() == 0):
-            save_path = f"{config.model_save_path}{modelID}_epoch_{epoch+1}.pth"            
+            save_path = f"{config.model_save_path_correctionModel}{modality}_{UMap}_{modelID}_epoch_{epoch+1}.pth"
             if environment != 'local':
                 torch.save(model.module.state_dict(), save_path)
             else:
@@ -188,7 +187,7 @@ def main():
 
     # Save the trained model
     if environment == 'local' or dist.get_rank() == 0:
-        save_path = f"{config.model_save_path}{modelID}_final_epoch.pth"
+        save_path = f"{config.model_save_path_correctionModel}{modality}_{UMap}_{modelID}_final_epoch.pth"
         if environment != 'local':
             torch.save(model.module.state_dict(), save_path)
             print(f"Model saved to {save_path}")

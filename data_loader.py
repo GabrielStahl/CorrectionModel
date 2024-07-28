@@ -8,11 +8,13 @@ import matplotlib.pyplot as plt
 import config
 
 class CorrectionDataset(Dataset):
-    def __init__(self, data_dir, patient_folders, crop_size=config.crop_size, transform=None):
+    def __init__(self, data_dir, modality = "T1c_bias", UMap = "modality_ensemble", crop_size=config.crop_size, transform=None):
         self.data_dir = data_dir
-        self.patient_folders = patient_folders
+        self.patient_folders = [folder for folder in os.listdir(data_dir) if folder.startswith("UCSF-PDGM-") and "FU" not in folder]
         self.crop_size = crop_size
         self.transform = transform
+        self.modality = modality
+        self.UMap = UMap
 
     def __len__(self):
         return len(self.patient_folders)
@@ -22,10 +24,10 @@ class CorrectionDataset(Dataset):
         patient_number = patient_folder.split("_")[0].split("-")[-1]
 
         # Load original MRI, predicted segmentation, uncertainty map, and error mask
-        mri_path = os.path.join(self.data_dir, patient_folder, f"UCSF-PDGM-{patient_number}_T2_bias.nii.gz")
-        pred_seg_path = os.path.join(self.data_dir, "predictions", f"segmentation_UCSF-PDGM-{patient_number}.nii.gz")
-        uncertainty_path = os.path.join(self.data_dir, "predictions", f"uncertainty_UCSF-PDGM-{patient_number}.nii.gz")
-        error_mask_path = os.path.join(self.data_dir, "error_masks", f"UCSF-PDGM-{patient_number}_error_mask.nii.gz")
+        mri_path = os.path.join(self.data_dir, patient_folder, f"UCSF-PDGM-{patient_number}_{self.modality}.nii.gz")
+        pred_seg_path = os.path.join(config.data_dir, "predictions_train_set", self.UMap, f"segmentation_UCSF-PDGM-{patient_number}.nii.gz")
+        uncertainty_path = os.path.join(config.data_dir, "predictions_train_set", self.UMap, f"{self.UMap}_UMap_UCSF-PDGM-{patient_number}.nii.gz")
+        error_mask_path = os.path.join(config.data_dir, "error_masks_train_set", f"UCSF-PDGM-{patient_number}_error_mask.nii.gz")
 
         mri_image = self._load_nifti_image(mri_path)
         pred_seg_image = self._load_nifti_image(pred_seg_path)
@@ -86,20 +88,6 @@ class CorrectionDataset(Dataset):
                               start_height:start_height+crop_height,
                               start_width:start_width+crop_width]
         return cropped_image
-
-    @staticmethod
-    def split_data(data_dir, train_ratio=0.2, val_ratio=0.1, test_ratio=0.0, seed=None):
-        random.seed(seed)
-        all_patient_folders = [folder for folder in os.listdir(data_dir) 
-                               if folder.startswith("UCSF-PDGM-") and "FU" not in folder and "541" not in folder]
-        random.shuffle(all_patient_folders)
-        num_patients = len(all_patient_folders)
-        train_size = int(num_patients * train_ratio)
-        val_size = int(num_patients * val_ratio)
-        train_folders = all_patient_folders[:train_size]
-        val_folders = all_patient_folders[train_size:train_size + val_size]
-        test_folders = all_patient_folders[train_size + val_size:]
-        return train_folders, val_folders, test_folders
 
 def visualize_example(data_dir):
     train_folders, _, _ = CorrectionDataset.split_data(data_dir)
