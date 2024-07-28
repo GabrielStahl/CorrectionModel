@@ -137,7 +137,7 @@ def main():
     val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, sampler=val_sampler, shuffle=False, num_workers=0)
 
     # Create the model
-    if environment == 'local':
+    if environment == 'cluster': # CHANGE BACK IF MODEL IS NOT LEARNING WELL
         model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
         print("Using UltraLightCorrectionUNet model for low memory consumption")
     else:
