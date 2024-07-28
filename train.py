@@ -103,8 +103,8 @@ def main():
         UMap = "modality_ensemble"
 
     # Load the datasets
-    train_dataset = CorrectionDataset("train_dir", modality, UMap)
-    val_dataset = CorrectionDataset("val_dir", modality, UMap)
+    train_dataset = CorrectionDataset("train_set", modality, UMap)
+    val_dataset = CorrectionDataset("val_set", modality, UMap)
 
     # Setup DDP and create distributed samplers if not in local environment
     if environment != 'local':
