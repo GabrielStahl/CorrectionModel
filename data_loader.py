@@ -13,9 +13,9 @@ class CorrectionDataset(Dataset):
         self.data_subset = data_subset
 
         if data_subset == "train_set":
-            data_dir = config.train_dir
+            self.data_dir = config.train_dir
         elif data_subset == "val_set":
-            data_dir = config.val_dir
+            self.data_dir = config.val_dir
         
         self.patient_folders = [folder for folder in os.listdir(self.data_dir) if folder.startswith("UCSF-PDGM-") and "FU" not in folder]
         self.crop_size = crop_size
