@@ -27,6 +27,8 @@ elif environment == 'cluster':
     output_dir = "/cluster/project2/UCSF_PDGM_dataset/UCSF-PDGM-v3/predictions_test_set/"
     print('Environment is: cluster')
 
+# CHOOSE data subset
+data_subset = "train_set" # CHOOSE FROM: train_set, val_set, test_set
 
 # Model configuration
 in_channels = 3 # 3 input channels (original MRI, predicted segmentation, uncertainty map)

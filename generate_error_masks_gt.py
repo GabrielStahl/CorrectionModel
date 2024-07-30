@@ -11,7 +11,7 @@ def save_nifti(data, file_path):
     nib.save(nib.Nifti1Image(data, np.eye(4)), file_path)
 
 def generate_error_mask(pred_seg, true_seg):
-    error_mask = np.zeros_like(true_seg)
+    error_mask = np.full_like(true_seg, 3) # Initialize error mask with intensity 3 (no error)
     error_mask[pred_seg != true_seg] = true_seg[pred_seg != true_seg]
     return error_mask
 
@@ -34,8 +34,11 @@ def process_patient(patient_folder, pred_seg_dir, data_dir, output_dir):
 
 def main():
     data_dir = config.data_dir 
-    subset_dir = config.val_dir # CHOOSE FROM: train_dir, val_dir
-    data_subset = "val_set" # CHOOSE FROM: train_dir, val_dir
+
+    data_subset = config.data_subset
+
+    subset_dir = config.train_dir if data_subset == "train_dir" else (config.val_dir if data_subset == "val_dir" else config.test_dir)
+        
     pred_seg_dir = os.path.join(data_dir, f"predictions_{data_subset}", "modality_ensemble") 
     output_dir = os.path.join(data_dir, f"error_masks_{data_subset}") 
     os.makedirs(output_dir, exist_ok=True)

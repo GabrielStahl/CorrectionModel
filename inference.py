@@ -25,11 +25,11 @@ class CorrectionInference:
         
         # Map the class indices to the original intensity values
         class_to_intensity = {
-            0: 0,  # No change needed or background
+            0: 0,  # Background
             1: 2,  # Outer tumor region
             2: 4,  # Enhancing tumor
             3: 1,  # Tumor core
-            4: 0   # This was originally mapped to background, now maps to no change
+            4: 3   # No Change Needed
         }
         map_func = np.vectorize(lambda x: class_to_intensity[x])
         correction_mask = map_func(output_numpy).astype(np.uint8)
@@ -57,9 +57,10 @@ class CorrectionInference:
     def perform_inference(self, data_loader, device):
         self.model.eval()
         correction_masks = []
+        patient_numbers = []
 
         with torch.no_grad():
-            for input_tensor, _ in tqdm(data_loader):
+            for input_tensor, patient_number in tqdm(data_loader):
                 input_tensor = input_tensor.to(device)
                 output = self.model(input_tensor)
                 
@@ -72,8 +73,10 @@ class CorrectionInference:
                 # Postprocess the output
                 correction_mask = self.postprocess_output(output)
                 correction_masks.append(correction_mask)
+
+                patient_numbers.append(patient_number[0])  # Extract from batch
         
-        return correction_masks
+        return correction_masks, patient_numbers
 
 def main():
     # Device configuration
@@ -85,13 +88,13 @@ def main():
     if environment == "local":
         model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
     else:
-        model = CorrectionUNet(in_channels=3, out_channels=5)
+        model = UltraLightCorrectionUNet(in_channels=3, out_channels=5) # after having solved memory issues: use CorrectionUNet
         
     model.to(device)
 
     # Load the trained model weights
-    weights = "correction_model_final_epoch.pth"
-    model_save_path = os.path.join(config.model_save_path, weights)
+    weights = "T1c_bias_modality_ensemble_correction_model_epoch_90.pth" # best epoch
+    model_save_path = os.path.join(config.model_save_path_correctionModel, weights)
     if os.path.exists(model_save_path):
         model.load_state_dict(torch.load(model_save_path, map_location=device))
         print(f"Loaded trained model weights from: {model_save_path}")
@@ -102,28 +105,37 @@ def main():
     # Set the model to evaluation mode
     model.eval()
 
-    # Get the patient folders for inference
-    inference_folders, _, _ = CorrectionDataset.split_data(config.data_dir, train_ratio=1.0, val_ratio=0.0, test_ratio=0.0, seed=42)
+    # CHOOSE data subset
+    data_subset = "train_set" # CHOOSE FROM: train_set, val_set, test_set
 
-    print(f"Getting patients from directory: {config.data_dir}")
+    # Set data directory
+    if data_subset == "train_set":
+        directory = config.train_dir
+    elif data_subset == "val_set":
+        directory = config.val_dir
+    elif data_subset == "test_set":
+        directory = config.test_dir
+
+    inference_folders = [f for f in os.listdir(directory) if f.startswith("UCSF-PDGM")]
+
+    print(f"Getting patients from directory: {config.test_dir}")
     print(f"Performing inference on: {len(inference_folders)} patients")
 
     # Create an instance of the CorrectionInference class
     inference = CorrectionInference(model)
     
-    dataset = CorrectionDataset(config.data_dir, inference_folders)
+    dataset = CorrectionDataset(data_subset, test_mode=True)
     data_loader = DataLoader(dataset, batch_size=1, shuffle=False)
     
     # Ensure the output directory exists
     os.makedirs(config.output_dir, exist_ok=True)
 
     # Perform inference
-    correction_masks = inference.perform_inference(data_loader, device)
+    correction_masks, patient_numbers = inference.perform_inference(data_loader, device)
     
     # Save the correction masks
-    for i, correction_mask in enumerate(correction_masks):
-        patient_number = inference_folders[i].split("-")[-1]
-        output_path = os.path.join(config.output_dir, f"correction_UCSF-PDGM-{patient_number}.nii.gz")
+    for correction_mask, patient_number in zip(correction_masks, patient_numbers):
+        output_path = os.path.join(config.data_dir, f"corrections_{data_subset}",f"correction_UCSF-PDGM-{patient_number}.nii.gz")
         correction_nifti = nib.Nifti1Image(correction_mask, affine=np.eye(4))
         nib.save(correction_nifti, output_path)
         print(f"Correction mask saved at: {output_path}")
