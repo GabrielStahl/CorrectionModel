@@ -39,7 +39,7 @@ def main():
 
     subset_dir = config.train_dir if data_subset == "train_dir" else (config.val_dir if data_subset == "val_dir" else config.test_dir)
     
-    print(f"Generating error masks for {data_subset} subset")
+    print(f"Generating error masks for {data_subset} subset, getting data from {subset_dir}")
 
     pred_seg_dir = os.path.join(data_dir, f"predictions_{data_subset}", "modality_ensemble") 
     output_dir = os.path.join(data_dir, f"error_masks_{data_subset}") 
