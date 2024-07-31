@@ -22,7 +22,7 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
     running_f1 = 0.0
     running_dice = 0.0
 
-    for batch_idx, (inputs, targets) in enumerate(train_dataloader):
+    for batch_idx, (inputs, targets, _) in enumerate(train_dataloader): # ignore third argument, which is just the patient number
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
 
@@ -59,7 +59,7 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
     val_dice = 0.0
 
     with torch.no_grad():
-        for inputs, targets in val_dataloader:
+        for inputs, targets, _ in val_dataloader: # ignore third argument, which is just the patient number
             inputs, targets = inputs.to(device), targets.to(device)
 
             outputs = model(inputs)
