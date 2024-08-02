@@ -74,10 +74,6 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
             val_f1 += f1
             val_dice += dice
 
-            print(f"Batch loss: {loss.item()}")
-            print(f"Unique predicted classes: {torch.unique(predicted_labels)}")
-            print(f"Unique target classes: {torch.unique(targets)}")
-
     val_loss /= len(val_dataloader)
     val_precision /= len(val_dataloader)
     val_recall /= len(val_dataloader)
