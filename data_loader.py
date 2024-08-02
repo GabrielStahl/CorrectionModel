@@ -3,8 +3,6 @@ import numpy as np
 import nibabel as nib
 import torch
 from torch.utils.data import Dataset
-import random
-import matplotlib.pyplot as plt
 import config
 
 class CorrectionDataset(Dataset):
@@ -103,33 +101,3 @@ class CorrectionDataset(Dataset):
                               start_height:start_height+crop_height,
                               start_width:start_width+crop_width]
         return cropped_image
-
-def visualize_example(data_dir):
-    train_folders, _, _ = CorrectionDataset.split_data(data_dir)
-    dataset = CorrectionDataset(data_dir, train_folders)
-    input_image, error_mask = dataset[0]
-
-    # Convert PyTorch tensors back to numpy arrays for visualization
-    input_image = input_image.numpy()
-    error_mask = error_mask.numpy()
-
-    # Visualize middle slices of each input channel and the error mask
-    fig, axes = plt.subplots(2, 2, figsize=(12, 12))
-    axes[0, 0].imshow(input_image[0, :, input_image.shape[2]//2, :], cmap='gray')
-    axes[0, 0].set_title("Original MRI")
-    axes[0, 1].imshow(input_image[1, :, input_image.shape[2]//2, :], cmap='jet')
-    axes[0, 1].set_title("Predicted Segmentation")
-    axes[1, 0].imshow(input_image[2, :, input_image.shape[2]//2, :], cmap='viridis')
-    axes[1, 0].set_title("Uncertainty Map")
-    axes[1, 1].imshow(error_mask[0, :, error_mask.shape[2]//2, :], cmap='jet')
-    axes[1, 1].set_title("Error Mask")
-
-    for ax in axes.flat:
-        ax.axis('off')
-
-    plt.tight_layout()
-    plt.show()
-
-if __name__ == "__main__":
-    data_dir = config.data_dir
-    visualize_example(data_dir)

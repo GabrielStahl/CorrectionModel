@@ -97,10 +97,14 @@ def main():
         modelID = sys.argv[1]
         modality = sys.argv[2]
         UMap = sys.argv[3] 
+
+        print(f" Using MRI modality: {modality}, and uncertainty map: {UMap}")
     else:
         modelID = "correction_model"
         modality = "T1c_bias"
-        UMap = "modality_ensemble"
+        UMap = "test_time_augmentation" # Choose from: modality_ensemble, deep_ensemble, dropout, test_time_augmentation, softmax
+
+        print(f" Using MRI modality: {modality}, and uncertainty map: {UMap}")
 
     # Load the datasets
     train_dataset = CorrectionDataset("train_set", modality, UMap)
