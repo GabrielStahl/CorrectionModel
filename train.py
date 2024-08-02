@@ -74,6 +74,10 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
             val_f1 += f1
             val_dice += dice
 
+            print(f"Batch loss: {loss.item()}")
+            print(f"Unique predicted classes: {torch.unique(predicted_labels)}")
+            print(f"Unique target classes: {torch.unique(targets)}")
+
     val_loss /= len(val_dataloader)
     val_precision /= len(val_dataloader)
     val_recall /= len(val_dataloader)
@@ -102,7 +106,7 @@ def main():
     else:
         modelID = "correction_model"
         modality = "T1c_bias"
-        UMap = "test_time_augmentation" # Choose from: modality_ensemble, deep_ensemble, dropout, test_time_augmentation, softmax
+        UMap = "modality_ensemble" # Choose from: modality_ensemble, deep_ensemble, dropout, test_time_augmentation, softmax
 
         print(f" Using MRI modality: {modality}, and uncertainty map: {UMap}")
 
@@ -145,7 +149,7 @@ def main():
         model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
         print("Using UltraLightCorrectionUNet model for low memory consumption")
     else:
-        model = CorrectionUNet(in_channels=3, out_channels=5, dropout=config.dropout)  # 3 input channels, 5 output classes (0-4)
+        model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)  # 3 input channels, 5 output classes (0-4)
         print("Using CorrectionUNet model")
         
     model = model.to(device)

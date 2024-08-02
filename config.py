@@ -42,7 +42,7 @@ crop_size = (150, 180, 155)
 if environment == 'local':
     batch_size = 1
     learning_rate = 0.01
-    epochs = 2
+    epochs = 10
 elif environment == 'cluster':
     batch_size = 1
     learning_rate = 0.001

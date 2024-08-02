@@ -14,36 +14,48 @@ def visualize_images(images, titles=None, figsize=(10, 5)):
         plt.axis('off')
     plt.tight_layout()
     plt.show()
-
+    
 class DiceLoss(nn.Module):
     """ Calculate Dice loss for each class separately and return average
     
     Args:
-        pred (torch.Tensor): Predictions from the model, torch.Size([1, 4, 150, 180, 155]) with logits for 4 classes at dim 1
-        target (torch.Tensor): Ground truth labels, torch.Size([1, 150, 180, 155]): Wit class incides [0,1,2,3] at dim 0
+        pred (torch.Tensor): Predictions from the model, torch.Size([1, 5, 150, 180, 155]) with logits for 5 classes at dim 1
+        target (torch.Tensor): Ground truth labels, torch.Size([1, 150, 180, 155]): Wit class incides [0,1,2,3,4] at dim 0
 
     Returns:
         torch.Tensor: Dice loss, scalar value
     """
-    def __init__(self):
+    def __init__(self, smooth=1e-5, ignore_background=False):
         super(DiceLoss, self).__init__()
+        self.smooth = smooth
+        self.ignore_background = ignore_background
 
     def forward(self, pred, target):
         pred = torch.softmax(pred, dim=1)
+        
+        # Flatten the tensors
+        pred = pred.view(pred.size(0), pred.size(1), -1)
+        target = target.view(target.size(0), -1)
+        
         dice_scores = []
-        for class_idx in range(1, pred.size(1)):  # Exclude background class
+        start_class = 1 if self.ignore_background else 0
+        
+        for class_idx in range(start_class, pred.size(1)):
             pred_class = pred[:, class_idx, ...]
             target_class = (target == class_idx).float()
-            dice = (2.0 * (pred_class * target_class).sum()) / (pred_class.sum() + target_class.sum() + 1e-7)
+            
+            intersection = (pred_class * target_class).sum(dim=1)
+            union = pred_class.sum(dim=1) + target_class.sum(dim=1)
+            
+            dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
             dice_scores.append(dice)
+        
         return 1 - torch.mean(torch.stack(dice_scores))
 
 def calculate_metrics(pred, target):
     """
     Calculate precision, recall, f1 score and dice coefficient for multi-class segmentation
     Compute metrics for each class separately and return separately + the average
-
-    CAVE: BACKGROUND class is excluded from the average metrics
 
     Args:
         pred (torch.Tensor), torch.Size([1, 150, 180, 116]): With class indices [0,1,2,3] of maximum logits at dim 0
@@ -56,13 +68,13 @@ def calculate_metrics(pred, target):
         avg_dice (torch.Tensor): Average Dice coefficient across all classes
     """
     # Initialize metrics
-    precision = torch.zeros(4)
-    recall = torch.zeros(4)
-    f1 = torch.zeros(4)
-    dice = torch.zeros(4)
+    precision = torch.zeros(5)
+    recall = torch.zeros(5)
+    f1 = torch.zeros(5)
+    dice = torch.zeros(5)
 
     # Calculate metrics for each class
-    for class_idx in range(4):
+    for class_idx in range(5):
         true_positive = torch.sum((pred == class_idx) & (target == class_idx))
         false_positive = torch.sum((pred == class_idx) & (target != class_idx))
         false_negative = torch.sum((pred != class_idx) & (target == class_idx))
@@ -72,11 +84,11 @@ def calculate_metrics(pred, target):
         f1[class_idx] = 2 * precision[class_idx] * recall[class_idx] / (precision[class_idx] + recall[class_idx] + 1e-7)
         dice[class_idx] = 2 * true_positive / (2 * true_positive + false_positive + false_negative + 1e-7)
 
-    # Calculate average metrics (excluding background class)
-    avg_precision = torch.mean(precision[1:])
-    avg_recall = torch.mean(recall[1:])
-    avg_f1 = torch.mean(f1[1:])
-    avg_dice = torch.mean(dice[1:])
+    # Calculate average metrics INCLUDING BACKGROUND CLASS
+    avg_precision = torch.mean(precision[0:])
+    avg_recall = torch.mean(recall[0:])
+    avg_f1 = torch.mean(f1[0:])
+    avg_dice = torch.mean(dice[0:])
 
     return avg_precision, avg_recall, avg_f1, avg_dice
 
