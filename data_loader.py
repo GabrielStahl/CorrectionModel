@@ -34,8 +34,8 @@ class CorrectionDataset(Dataset):
 
         # Load original MRI, predicted segmentation, uncertainty map, and error mask
         mri_path = os.path.join(self.data_dir, patient_folder, f"UCSF-PDGM-{patient_number}_{self.modality}.nii.gz")
-        pred_seg_path = os.path.join(config.data_dir, f"predictions_{self.data_subset}", self.UMap, f"segmentation_UCSF-PDGM-{patient_number}.nii.gz")
-        uncertainty_path = os.path.join(config.data_dir, f"predictions_{self.data_subset}", self.UMap, f"{self.UMap}_UMap_UCSF-PDGM-{patient_number}.nii.gz")
+        pred_seg_path = os.path.join(config.root_dir, f"predictions_{self.data_subset}", self.UMap, f"segmentation_UCSF-PDGM-{patient_number}.nii.gz")
+        uncertainty_path = os.path.join(config.root_dir, f"predictions_{self.data_subset}", self.UMap, f"{self.UMap}_UMap_UCSF-PDGM-{patient_number}.nii.gz")
 
         mri_image = self._load_nifti_image(mri_path)
         pred_seg_image = self._load_nifti_image(pred_seg_path)
@@ -66,7 +66,7 @@ class CorrectionDataset(Dataset):
             return input_image, patient_number
         else:
             # Load and process error mask as before
-            error_mask_path = os.path.join(config.data_dir, f"error_masks_{self.data_subset}", f"UCSF-PDGM-{patient_number}_error_mask.nii.gz")
+            error_mask_path = os.path.join(config.root_dir, f"error_masks_{self.data_subset}", f"UCSF-PDGM-{patient_number}_error_mask.nii.gz")
             error_mask = self._load_nifti_image(error_mask_path)
             error_mask = self._center_crop(error_mask, self.crop_size)
             error_mask = error_mask.astype(np.float32)

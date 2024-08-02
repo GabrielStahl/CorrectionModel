@@ -7,7 +7,7 @@ import os
 environment = os.environ.get('ENVIRONMENT', 'local')  # Default to 'local' if the environment variable is not set
 
 if environment == 'local':
-    data_dir = "/Users/Gabriel/MRes_Medical_Imaging/RESEARCH_PROJECT/DATA/" 
+    root_dir = "/Users/Gabriel/MRes_Medical_Imaging/RESEARCH_PROJECT/DATA/" 
     train_dir = "/Users/Gabriel/MRes_Medical_Imaging/RESEARCH_PROJECT/DATA/train_data/"
     val_dir = "/Users/Gabriel/MRes_Medical_Imaging/RESEARCH_PROJECT/DATA/val_data/"
     test_dir = "/Users/Gabriel/MRes_Medical_Imaging/RESEARCH_PROJECT/DATA/test_data/"
@@ -17,7 +17,7 @@ if environment == 'local':
     output_dir = "/Users/Gabriel/MRes_Medical_Imaging/RESEARCH_PROJECT/BasicSeg3D/Predicted_Segmentations/"
     print('Environment is: local')
 elif environment == 'cluster':
-    data_dir = "/cluster/project2/UCSF_PDGM_dataset/UCSF-PDGM-v3/"
+    root_dir = "/cluster/project2/UCSF_PDGM_dataset/UCSF-PDGM-v3/"
     train_dir = "/cluster/project2/UCSF_PDGM_dataset/UCSF-PDGM-v3/TRAIN_SET/"
     val_dir = "/cluster/project2/UCSF_PDGM_dataset/UCSF-PDGM-v3/VAL_SET/"
     test_dir = "/cluster/project2/UCSF_PDGM_dataset/UCSF-PDGM-v3/TEST_SET/"

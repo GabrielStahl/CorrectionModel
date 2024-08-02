@@ -106,7 +106,7 @@ def main():
     model.eval()
 
     # CHOOSE data subset
-    data_subset = "train_set" # CHOOSE FROM: train_set, val_set, test_set
+    data_subset = "val_set" # CHOOSE FROM: train_set, val_set, test_set
 
     # Set data directory
     if data_subset == "train_set":
@@ -118,7 +118,7 @@ def main():
 
     inference_folders = [f for f in os.listdir(directory) if f.startswith("UCSF-PDGM")]
 
-    print(f"Getting patients from directory: {config.test_dir}")
+    print(f"Getting patients from directory: {directory}")
     print(f"Performing inference on: {len(inference_folders)} patients")
 
     # Create an instance of the CorrectionInference class
@@ -135,7 +135,7 @@ def main():
     
     # Save the correction masks
     for correction_mask, patient_number in zip(correction_masks, patient_numbers):
-        output_path = os.path.join(config.data_dir, f"corrections_{data_subset}",f"correction_UCSF-PDGM-{patient_number}.nii.gz")
+        output_path = os.path.join(config.root_dir, f"corrections_{data_subset}",f"correction_UCSF-PDGM-{patient_number}.nii.gz")
         correction_nifti = nib.Nifti1Image(correction_mask, affine=np.eye(4))
         nib.save(correction_nifti, output_path)
         print(f"Correction mask saved at: {output_path}")

@@ -33,7 +33,7 @@ def process_patient(patient_folder, pred_seg_dir, data_dir, output_dir):
     save_nifti(error_mask, output_path)
 
 def main():
-    data_dir = config.data_dir 
+    data_dir = config.root_dir 
 
     data_subset = config.data_subset
 
