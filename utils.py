@@ -58,8 +58,7 @@ class DiceLoss(nn.Module):
         loss = total_loss / total_weights  # Normalize by total weights
 
         # check if loss is > 1, if yes print intersection, union and loss
-        if loss > 1:
-            print(f"Loss is greater than 1. Intersection: {intersection}, Union: {union}, Loss: {loss}")
+        print(f"Intersection: {intersection}, Union: {union}, Loss: {loss}")
         
         return loss
     
