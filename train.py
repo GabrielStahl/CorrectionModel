@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
-from data_loader import CorrectionDataset
+from data_loader import CorrectionDataset_predictSeg
 from model import CorrectionUNet  
 from low_memory_model import UltraLightCorrectionUNet  
 import config
@@ -113,8 +113,8 @@ def main():
         print(f" Using MRI modality: {modality}, and uncertainty map: {UMap}")
 
     # Load the datasets
-    train_dataset = CorrectionDataset("train_set", modality, UMap)
-    val_dataset = CorrectionDataset("val_set", modality, UMap)
+    train_dataset = CorrectionDataset_predictSeg("train_set", modality, UMap)
+    val_dataset = CorrectionDataset_predictSeg("val_set", modality, UMap)
 
     # Setup DDP and create distributed samplers if not in local environment
     if environment != 'local':
