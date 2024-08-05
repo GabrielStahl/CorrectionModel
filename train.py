@@ -33,6 +33,11 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
 
         loss = loss.to(device)
         scaler.scale(loss).backward()
+
+        # Gradient clipping to prevent exploding gradients
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
         scaler.step(optimizer)
         scaler.update()
 
@@ -65,7 +70,7 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
 
             outputs = model(inputs)
             targets = torch.squeeze(targets, 1)
-            loss = criterion(outputs, targets)
+            loss = criterion(outputs, targets, ignore_background=True)
 
             val_loss += loss.item()
             predicted_labels = torch.argmax(outputs.detach(), dim=1)
