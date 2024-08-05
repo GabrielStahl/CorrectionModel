@@ -38,7 +38,7 @@ class DiceLoss(nn.Module):
         torch.Tensor: Normalized weighted average Dice loss, a scalar value in the range [0, 1]
     """
 
-    def __init__(self, smooth=1e-5, ignore_background=False, class_weights=None):
+    def __init__(self, smooth=1e-3, ignore_background=False, class_weights=None):
         super(DiceLoss, self).__init__()
         self.smooth = smooth
         self.ignore_background = ignore_background
@@ -48,6 +48,11 @@ class DiceLoss(nn.Module):
         pred = torch.softmax(pred, dim=1)
         pred = pred.view(pred.size(0), pred.size(1), -1)
         target = target.view(target.size(0), -1)
+
+        assert not torch.isnan(pred).any(), "Pred contains NaN values"
+        assert not torch.isinf(pred).any(), "Pred contains infinite values"
+        assert not torch.isnan(target).any(), "Target contains NaN values"
+        assert not torch.isinf(target).any(), "Target contains infinite values"
         
         start_class = 1 if self.ignore_background else 0
         
@@ -61,7 +66,10 @@ class DiceLoss(nn.Module):
             intersection = (pred_class * target_class).sum()
             union = pred_class.sum() + target_class.sum()
             
-            dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
+            if pred_class.sum() == 0 and target_class.sum() == 0:
+                dice = 1.0  # no loss if class not present in subect
+            else:
+                dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
             
             if self.class_weights is not None:
                 class_weight = self.class_weights[class_idx - start_class]
@@ -73,44 +81,44 @@ class DiceLoss(nn.Module):
         
         return total_loss / total_weights  # Normalize by total weights
 
-def calculate_metrics(pred, target):
+def calculate_metrics(pred, target, smooth=1e-5):
     """
     Calculate precision, recall, f1 score and dice coefficient for multi-class segmentation
-    Compute metrics for each class separately and return separately + the average
-
+    Compute metrics for each class separately and return the average across all classes
     Args:
-        pred (torch.Tensor), torch.Size([1, 150, 180, 116]): With class indices [0,1,2,3] of maximum logits at dim 0
-        target (torch.Tensor), torch.Size([1, 150, 180, 116]): Wit class incides [0,1,2,3] at dim 0
-
+    pred (torch.Tensor), torch.Size([1, 150, 180, 116]): With class indices [0,1,2,3,4] of maximum logits
+    target (torch.Tensor), torch.Size([1, 150, 180, 116]): With class indices [0,1,2,3,4]
+    smooth (float): Smoothing factor to avoid division by zero
     Returns:
-        avg_precision (torch.Tensor): Average precision across all classes
-        avg_recall (torch.Tensor): Average recall across all classes
-        avg_f1 (torch.Tensor): Average F1 score across all classes
-        avg_dice (torch.Tensor): Average Dice coefficient across all classes
+    avg_precision (torch.Tensor): Average precision across all classes
+    avg_recall (torch.Tensor): Average recall across all classes
+    avg_f1 (torch.Tensor): Average F1 score across all classes
+    avg_dice (torch.Tensor): Average Dice coefficient across all classes
     """
-    # Initialize metrics
-    precision = torch.zeros(5)
-    recall = torch.zeros(5)
-    f1 = torch.zeros(5)
-    dice = torch.zeros(5)
-
-    # Calculate metrics for each class
-    for class_idx in range(5):
-        true_positive = torch.sum((pred == class_idx) & (target == class_idx))
-        false_positive = torch.sum((pred == class_idx) & (target != class_idx))
-        false_negative = torch.sum((pred != class_idx) & (target == class_idx))
-
-        precision[class_idx] = true_positive / (true_positive + false_positive + 1e-7)
-        recall[class_idx] = true_positive / (true_positive + false_negative + 1e-7)
-        f1[class_idx] = 2 * precision[class_idx] * recall[class_idx] / (precision[class_idx] + recall[class_idx] + 1e-7)
-        dice[class_idx] = 2 * true_positive / (2 * true_positive + false_positive + false_negative + 1e-7)
-
-    # Calculate average metrics INCLUDING BACKGROUND CLASS
-    avg_precision = torch.mean(precision[0:])
-    avg_recall = torch.mean(recall[0:])
-    avg_f1 = torch.mean(f1[0:])
-    avg_dice = torch.mean(dice[0:])
-
+    num_classes = 5
+    precision = torch.zeros(num_classes, device=pred.device)
+    recall = torch.zeros(num_classes, device=pred.device)
+    f1 = torch.zeros(num_classes, device=pred.device)
+    dice = torch.zeros(num_classes, device=pred.device)
+    
+    for class_idx in range(num_classes):
+        pred_class = (pred == class_idx).float()
+        target_class = (target == class_idx).float()
+        
+        intersection = (pred_class * target_class).sum()
+        pred_sum = pred_class.sum()
+        target_sum = target_class.sum()
+        
+        precision[class_idx] = intersection / (pred_sum + smooth)
+        recall[class_idx] = intersection / (target_sum + smooth)
+        f1[class_idx] = 2 * precision[class_idx] * recall[class_idx] / (precision[class_idx] + recall[class_idx] + smooth)
+        dice[class_idx] = (2. * intersection + smooth) / (pred_sum + target_sum + smooth)
+    
+    avg_precision = torch.mean(precision)
+    avg_recall = torch.mean(recall)
+    avg_f1 = torch.mean(f1)
+    avg_dice = torch.mean(dice)
+    
     return avg_precision, avg_recall, avg_f1, avg_dice
 
 
