@@ -70,7 +70,7 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
 
             outputs = model(inputs)
             targets = torch.squeeze(targets, 1)
-            loss = criterion(outputs, targets, ignore_background=True)
+            loss = criterion(outputs, targets)
 
             val_loss += loss.item()
             predicted_labels = torch.argmax(outputs.detach(), dim=1)
@@ -163,7 +163,7 @@ def main():
 
     # Loss function and optimizer
     loss_weights = config.class_weights
-    criterion = DiceLoss(class_weights=loss_weights)  
+    criterion = DiceLoss(class_weights=loss_weights, ignore_background=True)  
     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
 
     # Create the GradScaler
