@@ -31,6 +31,7 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
             targets = torch.squeeze(targets, 1)
             loss = criterion(outputs, targets)
 
+        loss = loss.to(device)
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()

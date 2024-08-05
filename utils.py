@@ -38,7 +38,7 @@ class DiceLoss(nn.Module):
         torch.Tensor: Normalized weighted average Dice loss, a scalar value in the range [0, 1]
     """
 
-    def __init__(self, smooth=1e-3, ignore_background=False, class_weights=None):
+    def __init__(self, smooth=1e-5, ignore_background=False, class_weights=None):
         super(DiceLoss, self).__init__()
         self.smooth = smooth
         self.ignore_background = ignore_background
@@ -64,16 +64,10 @@ class DiceLoss(nn.Module):
             intersection = (pred_class * target_class).sum() # logical AND operation
             union = pred_class.sum() + target_class.sum()
             
-            if pred_class.sum() == 0 and target_class.sum() == 0:
-                dice = 1.0  # no loss if class not present in subect
-            else:
-                dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
+            dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
             
-            if self.class_weights is not None:
-                class_weight = self.class_weights[class_idx - start_class]
-            else:
-                class_weight = 1.0
-            
+            class_weight = self.class_weights[class_idx - start_class]
+
             total_loss += (1 - dice) * class_weight
             total_weights += class_weight
         
