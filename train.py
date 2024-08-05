@@ -22,7 +22,7 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
     running_f1 = 0.0
     running_dice = 0.0
 
-    for batch_idx, (inputs, targets, patient_number) in enumerate(train_dataloader): # ignore third argument, which is just the patient number
+    for inputs, targets, patient_number in train_dataloader: # ignore third argument, which is just the patient number
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
 
@@ -31,6 +31,13 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
 
         with autocast():
             outputs = model(inputs)
+
+            # check for nan values in the output and print patient number
+            nan_mask = torch.isnan(outputs)
+            nan_count = nan_mask.sum().item()
+            if nan_count > 0:
+                print(f"Warning: Output contains {nan_count} NaN values for patient number: {patient_number}")
+
             targets = torch.squeeze(targets, 1)
             loss = criterion(outputs, targets)
 
