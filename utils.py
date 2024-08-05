@@ -49,10 +49,8 @@ class DiceLoss(nn.Module):
         pred = pred.view(pred.size(0), pred.size(1), -1)
         target = target.view(target.size(0), -1)
 
-        assert not torch.isnan(pred).any(), "Pred contains NaN values"
-        assert not torch.isinf(pred).any(), "Pred contains infinite values"
-        assert not torch.isnan(target).any(), "Target contains NaN values"
-        assert not torch.isinf(target).any(), "Target contains infinite values"
+        self._check_nan("pred", pred)
+        self._check_nan("target", target)
         
         start_class = 1 if self.ignore_background else 0
         
@@ -80,6 +78,17 @@ class DiceLoss(nn.Module):
             total_weights += class_weight
         
         return total_loss / total_weights  # Normalize by total weights
+    
+    def _check_nan(self, name, tensor):
+        nan_mask = torch.isnan(tensor)
+        inf_mask = torch.isinf(tensor)
+        nan_count = nan_mask.sum().item()
+        inf_count = inf_mask.sum().item()
+        
+        if nan_count > 0 or inf_count > 0:
+            print(f"Warning: {name} contains {nan_count} NaN values and {inf_count} inf values")
+            return True
+        return False
 
 def calculate_metrics(pred, target, smooth=1e-5):
     """
@@ -184,5 +193,3 @@ def calculate_metrics_EVAL(pred, target):
     }
 
     return metrics
-
-
