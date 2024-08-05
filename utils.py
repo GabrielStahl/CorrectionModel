@@ -3,18 +3,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-
-def visualize_images(images, titles=None, figsize=(10, 5)):
-    plt.figure(figsize=figsize)
-    for i, image in enumerate(images):
-        plt.subplot(1, len(images), i+1)
-        plt.imshow(image, cmap='gray')
-        if titles:
-            plt.title(titles[i])
-        plt.axis('off')
-    plt.tight_layout()
-    plt.show()
-    
 class DiceLoss(nn.Module):
     """
     Calculate Dice loss for each class separately and return the normalized average.
@@ -24,15 +12,11 @@ class DiceLoss(nn.Module):
     always be in the range [0, 1].
 
     Args:
-        pred (torch.Tensor): Predictions from the model, torch.Size([1, 5, 150, 180, 155])
-                             with logits for 5 classes at dim 1
-        target (torch.Tensor): Ground truth labels, torch.Size([1, 150, 180, 155])
-                               with class indices [0,1,2,3,4] at dim 0
-        smooth (float): Smoothing factor to avoid division by zero, default is 1e-5
-        ignore_background (bool): Whether to ignore the background class (assumed to be class 0),
-                                  default is False
-        class_weights (torch.Tensor or None): Optional tensor of class weights to apply to each class's
-                                              Dice score, default is None
+        pred (torch.Tensor): Predictions from the model, torch.Size([1, 5, 150, 180, 155]) with logits for 5 classes at dim 1
+        target (torch.Tensor): Ground truth labels, torch.Size([1, 150, 180, 155]) with class indices [0,1,2,3,4] at dim 0
+
+        ignore_background (bool): Whether to ignore the background class (class 0), default is False
+        class_weights (torch.Tensor or None): Optional tensor of class weights to apply to each class's Dice score, default is None
 
     Returns:
         torch.Tensor: Normalized weighted average Dice loss, a scalar value in the range [0, 1]
@@ -70,8 +54,14 @@ class DiceLoss(nn.Module):
 
             total_loss += (1 - dice) * class_weight
             total_weights += class_weight
+
+        loss = total_loss / total_weights  # Normalize by total weights
+
+        # check if loss is > 1, if yes print intersection, union and loss
+        if loss > 1:
+            print(f"Loss is greater than 1. Intersection: {intersection}, Union: {union}, Loss: {loss}")
         
-        return total_loss / total_weights  # Normalize by total weights
+        return loss
     
     def _check_nan(self, name, tensor):
         nan_mask = torch.isnan(tensor)
