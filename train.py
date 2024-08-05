@@ -143,7 +143,7 @@ def main():
         print(f"Rank: {rank}, World size: {world_size}, Local rank: {local_rank}, USING Device ID: {device_id}")
 
         # Create distributed samplers
-        train_sampler = DistributedSampler(train_dataset)
+        train_sampler = DistributedSampler(train_dataset, shuffle = True, seed = 12)
         val_sampler = DistributedSampler(val_dataset, shuffle=False)
     else:
         rank = 0
@@ -157,7 +157,7 @@ def main():
         device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
     # Create data loaders
-    train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, sampler=train_sampler, shuffle=True, num_workers=0)
+    train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, sampler=train_sampler, shuffle=False, num_workers=0)
     val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, sampler=val_sampler, shuffle=False, num_workers=0)
 
     # Create the model
