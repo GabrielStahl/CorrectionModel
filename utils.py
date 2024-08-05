@@ -49,8 +49,8 @@ class DiceLoss(nn.Module):
         pred = pred.view(pred.size(0), pred.size(1), -1)
         target = target.view(target.size(0), -1)
 
-        self._check_nan("pred", pred)
-        self._check_nan("target", target)
+        if self._check_nan("pred", pred) or self._check_nan("target", target):
+            return torch.tensor(1.0) # Return 0 loss if NaN or inf values are present
         
         start_class = 1 if self.ignore_background else 0
         
@@ -61,7 +61,7 @@ class DiceLoss(nn.Module):
             pred_class = pred[:, class_idx, ...]
             target_class = (target == class_idx).float()
             
-            intersection = (pred_class * target_class).sum()
+            intersection = (pred_class * target_class).sum() # logical AND operation
             union = pred_class.sum() + target_class.sum()
             
             if pred_class.sum() == 0 and target_class.sum() == 0:

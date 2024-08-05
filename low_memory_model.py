@@ -5,9 +5,6 @@ import config
 import os
 import warnings
 
-# Set the environment variable for MPS fallback
-os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
-
 # Suppress warnings
 warnings.filterwarnings("ignore")
 
