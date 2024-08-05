@@ -41,10 +41,23 @@ class CorrectionDataset(Dataset):
         pred_seg_image = self._load_nifti_image(pred_seg_path)
         uncertainty_image = self._load_nifti_image(uncertainty_path)
 
+        # print unique values in the predicted segmentation image
+        print(f"Unique values in the predicted segmentation image: {np.unique(pred_seg_image)}")
+
         # Center crop all images
         mri_image = self._center_crop(mri_image, self.crop_size)
         pred_seg_image = self._center_crop(pred_seg_image, self.crop_size)
         uncertainty_image = self._center_crop(uncertainty_image, self.crop_size)
+
+        # Map intensity values to class indices for predicted segmentation
+        intensity_to_class = {
+            0: 0,  # Background
+            2: 1,  # Outer tumor region
+            4: 2,  # Enhancing tumor
+            1: 3   # Tumor core
+        }
+        map_func = np.vectorize(lambda x: intensity_to_class[x])
+        pred_seg_image = map_func(pred_seg_image)
 
         # Normalize MRI image
         mri_image = mri_image / np.max(mri_image)
