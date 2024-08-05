@@ -30,6 +30,13 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
         print(f"Predicting patient number: {patient_number}")
 
         with autocast():
+            # print range of values in input and check if there are any NaN values
+            print(f"Input range: {inputs.min().item()} - {inputs.max().item()}")
+            nan_mask = torch.isnan(inputs)
+            nan_count = nan_mask.sum().item()
+            if nan_count > 0:
+                print(f"Warning: Input contains {nan_count} NaN values for patient number: {patient_number}")
+
             outputs = model(inputs)
 
             # check for nan values in the output and print patient number
