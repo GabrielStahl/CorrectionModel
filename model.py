@@ -39,7 +39,7 @@ class CorrectionUNet(nn.Module):
                 layers.append(nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1))
             else:
                 layers.append(nn.Conv3d(out_channels, out_channels, kernel_size=3, padding=1))
-            layers.append(nn.BatchNorm3d(out_channels))
+            #layers.append(nn.BatchNorm3d(out_channels)) # add if batch size is > 1
             layers.append(nn.ReLU(inplace=True))
             if dropout is not None:
                 layers.append(nn.Dropout3d(p=dropout))
