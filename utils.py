@@ -33,9 +33,6 @@ class DiceLoss(nn.Module):
         pred = pred.view(pred.size(0), pred.size(1), -1)
         target = target.view(target.size(0), -1)
 
-        if self._check_nan("pred", pred) or self._check_nan("target", target):
-            return torch.tensor(1.0) # Return 0 loss if NaN or inf values are present
-        
         start_class = 1 if self.ignore_background else 0
         
         total_loss = 0
@@ -56,22 +53,8 @@ class DiceLoss(nn.Module):
             total_weights += class_weight
 
         loss = total_loss / total_weights  # Normalize by total weights
-
-        # check if loss is > 1, if yes print intersection, union and loss
-        print(f"Intersection: {intersection}, Union: {union}, Loss: {loss}")
         
         return loss
-    
-    def _check_nan(self, name, tensor):
-        nan_mask = torch.isnan(tensor)
-        inf_mask = torch.isinf(tensor)
-        nan_count = nan_mask.sum().item()
-        inf_count = inf_mask.sum().item()
-        
-        if nan_count > 0 or inf_count > 0:
-            print(f"Warning: {name} contains {nan_count} NaN values and {inf_count} inf values")
-            return True
-        return False
 
 def calculate_metrics(pred, target, smooth=1e-5):
     """
