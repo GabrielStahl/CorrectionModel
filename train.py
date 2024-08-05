@@ -22,9 +22,12 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
     running_f1 = 0.0
     running_dice = 0.0
 
-    for batch_idx, (inputs, targets, _) in enumerate(train_dataloader): # ignore third argument, which is just the patient number
+    for batch_idx, (inputs, targets, patient_number) in enumerate(train_dataloader): # ignore third argument, which is just the patient number
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
+
+        # print: processing patient number, use
+        print(f"Predicting patient number: {patient_number}")
 
         with autocast():
             outputs = model(inputs)
@@ -60,8 +63,10 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
     val_dice = 0.0
 
     with torch.no_grad():
-        for inputs, targets, _ in val_dataloader: # ignore third argument, which is just the patient number
+        for inputs, targets, patient_number in val_dataloader: # ignore third argument, which is just the patient number
             inputs, targets = inputs.to(device), targets.to(device)
+
+            print(f"Validaing with patient number: {patient_number}")
 
             outputs = model(inputs)
             targets = torch.squeeze(targets, 1)
