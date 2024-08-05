@@ -84,13 +84,6 @@ class CorrectionDataset(Dataset):
             error_mask = np.expand_dims(error_mask, axis=0)
             error_mask = torch.from_numpy(error_mask).long()
 
-            print(f"Patient loaded: {patient_number}")
-
-            if torch.isnan(input_image).any():
-                print(f"NaN values found in input for patient {patient_number}")
-            if not self.test_mode and torch.isnan(error_mask).any():
-                print(f"NaN values found in target for patient {patient_number}")
-
             return input_image, error_mask, patient_number
 
     def _load_nifti_image(self, path):

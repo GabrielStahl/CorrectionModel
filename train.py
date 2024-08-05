@@ -26,29 +26,8 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
 
-        # print: processing patient number, use
-        print(f"Predicting patient number: {patient_number}")
-
         with autocast():
-            # print range of values in input and check if there are any NaN values
-            print(f"Input range: {inputs.min().item()} - {inputs.max().item()}")
-            nan_mask = torch.isnan(inputs)
-            nan_count = nan_mask.sum().item()
-            if nan_count > 0:
-                print(f"Warning: Input contains {nan_count} NaN values for patient number: {patient_number}")
-
             outputs = model(inputs)
-
-            # print range of outputs
-            print(f"Output range: {outputs.min().item()} - {outputs.max().item()}")
-
-            # check for nan values in the output and print patient number
-            nan_mask = torch.isnan(outputs)
-            nan_count = nan_mask.sum().item()
-            if nan_count > 0:
-                print(f"Warning: Output contains {nan_count} NaN values for patient number: {patient_number}")
-            
-
             targets = torch.squeeze(targets, 1)
             loss = criterion(outputs, targets)
 
@@ -83,8 +62,6 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
     with torch.no_grad():
         for inputs, targets, patient_number in val_dataloader: # ignore third argument, which is just the patient number
             inputs, targets = inputs.to(device), targets.to(device)
-
-            print(f"Validaing with patient number: {patient_number}")
 
             outputs = model(inputs)
             targets = torch.squeeze(targets, 1)
