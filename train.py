@@ -147,7 +147,7 @@ def main():
         print("Using UltraLightCorrectionUNet model for low memory consumption")
     else:
         model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)  # 3 input channels, 5 output classes (0-4)
-        print("Using CorrectionUNet model")
+        print("Using UltraLightCorrectionUNet model")
         
     model = model.to(device)
     print(f"model moved to device: {device} with rank: {rank}")
@@ -157,7 +157,8 @@ def main():
         model = nn.parallel.DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
 
     # Loss function and optimizer
-    criterion = DiceLoss(class_weights=config.class_weights)  
+    loss_weights = config.class_weights
+    criterion = DiceLoss(class_weights=loss_weights)  
     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
 
     # Create the GradScaler
