@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.optim as optim
 import os
+import torch
 
 # Data configuration
 
@@ -30,6 +31,9 @@ elif environment == 'cluster':
 # CHOOSE data subset
 data_subset = "train_set" # CHOOSE FROM: train_set, val_set, test_set
 
+# CHOOSE class weights for weighted DiceLoss calculation
+class_weights = torch.tensor([0.5, 3.0, 2.5, 2.0, 2.0])
+
 # Model configuration
 in_channels = 3 # 3 input channels (original MRI, predicted segmentation, uncertainty map)
 out_channels = 5 # 5 classes (0-4): 0 = no change needed, 1 = change to outer tumor region, 2 = change to enhancing tumor, 3 = change to tumor core
@@ -42,7 +46,7 @@ crop_size = (150, 180, 155)
 if environment == 'local':
     batch_size = 1
     learning_rate = 0.01
-    epochs = 10
+    epochs = 30
 elif environment == 'cluster':
     batch_size = 1
     learning_rate = 0.001

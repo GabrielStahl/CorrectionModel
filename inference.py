@@ -93,7 +93,7 @@ def main():
     model.to(device)
 
     # Load the trained model weights
-    weights = "T1c_bias_modality_ensemble_correction_model_epoch_90.pth" # best epoch
+    weights = "T1c_bias_modality_ensemble_correction_model_epoch_55.pth" # best epoch
     model_save_path = os.path.join(config.model_save_path_correctionModel, weights)
     if os.path.exists(model_save_path):
         model.load_state_dict(torch.load(model_save_path, map_location=device))

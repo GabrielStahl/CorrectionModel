@@ -16,41 +16,62 @@ def visualize_images(images, titles=None, figsize=(10, 5)):
     plt.show()
     
 class DiceLoss(nn.Module):
-    """ Calculate Dice loss for each class separately and return average
+    """
+    Calculate Dice loss for each class separately and return the normalized average.
     
+    This implementation supports class weighting to handle imbalanced datasets
+    and can optionally ignore the background class. The loss is normalized to
+    always be in the range [0, 1].
+
     Args:
-        pred (torch.Tensor): Predictions from the model, torch.Size([1, 5, 150, 180, 155]) with logits for 5 classes at dim 1
-        target (torch.Tensor): Ground truth labels, torch.Size([1, 150, 180, 155]): Wit class incides [0,1,2,3,4] at dim 0
+        pred (torch.Tensor): Predictions from the model, torch.Size([1, 5, 150, 180, 155])
+                             with logits for 5 classes at dim 1
+        target (torch.Tensor): Ground truth labels, torch.Size([1, 150, 180, 155])
+                               with class indices [0,1,2,3,4] at dim 0
+        smooth (float): Smoothing factor to avoid division by zero, default is 1e-5
+        ignore_background (bool): Whether to ignore the background class (assumed to be class 0),
+                                  default is False
+        class_weights (torch.Tensor or None): Optional tensor of class weights to apply to each class's
+                                              Dice score, default is None
 
     Returns:
-        torch.Tensor: Dice loss, scalar value
+        torch.Tensor: Normalized weighted average Dice loss, a scalar value in the range [0, 1]
     """
-    def __init__(self, smooth=1e-5, ignore_background=False):
+
+    def __init__(self, smooth=1e-5, ignore_background=False, class_weights=None):
         super(DiceLoss, self).__init__()
         self.smooth = smooth
         self.ignore_background = ignore_background
+        self.class_weights = class_weights
 
     def forward(self, pred, target):
         pred = torch.softmax(pred, dim=1)
-        
-        # Flatten the tensors
         pred = pred.view(pred.size(0), pred.size(1), -1)
         target = target.view(target.size(0), -1)
         
-        dice_scores = []
         start_class = 1 if self.ignore_background else 0
+        
+        total_loss = 0
+        total_weights = 0
         
         for class_idx in range(start_class, pred.size(1)):
             pred_class = pred[:, class_idx, ...]
             target_class = (target == class_idx).float()
             
-            intersection = (pred_class * target_class).sum(dim=1)
-            union = pred_class.sum(dim=1) + target_class.sum(dim=1)
+            intersection = (pred_class * target_class).sum()
+            union = pred_class.sum() + target_class.sum()
             
             dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
-            dice_scores.append(dice)
+            
+            if self.class_weights is not None:
+                class_weight = self.class_weights[class_idx - start_class]
+            else:
+                class_weight = 1.0
+            
+            total_loss += (1 - dice) * class_weight
+            total_weights += class_weight
         
-        return 1 - torch.mean(torch.stack(dice_scores))
+        return total_loss / total_weights  # Normalize by total weights
 
 def calculate_metrics(pred, target):
     """
