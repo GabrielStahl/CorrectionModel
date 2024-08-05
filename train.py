@@ -156,7 +156,7 @@ def main():
         model = nn.parallel.DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
 
     # Loss function and optimizer
-    criterion = DiceLoss()  
+    criterion = DiceLoss(class_weights=config.class_weights)  
     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
 
     # Create the GradScaler
