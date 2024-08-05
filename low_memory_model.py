@@ -25,6 +25,9 @@ class UltraLightCorrectionUNet(nn.Module):
         
         self.final_conv = nn.Conv3d(16, out_channels, kernel_size=1)
 
+        # Initialize weights
+        self.apply(self._init_weights)
+
     def conv_block(self, in_channels, out_channels):
         return nn.Sequential(
             nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1),
@@ -51,3 +54,9 @@ class UltraLightCorrectionUNet(nn.Module):
 
     def upsample(self, x, size):
         return F.interpolate(x, size=size[2:], mode='nearest')
+    
+    def _init_weights(self, m):
+        if isinstance(m, nn.Conv3d):
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)

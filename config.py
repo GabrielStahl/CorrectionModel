@@ -32,7 +32,11 @@ elif environment == 'cluster':
 data_subset = "train_set" # CHOOSE FROM: train_set, val_set, test_set
 
 # CHOOSE class weights for weighted DiceLoss calculation
-class_weights = torch.tensor([0.1, 3.4, 3.4, 0.1, 3.0])
+#class_weights = torch.tensor([0.1, 3.4, 3.4, 0.1, 3.0])
+
+# all 1
+class_weights = torch.tensor([1.0, 1.0, 1.0, 1.0])
+
 
 # Model configuration
 in_channels = 3 # 3 input channels (original MRI, predicted segmentation, uncertainty map)
