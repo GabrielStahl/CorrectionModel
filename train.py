@@ -39,11 +39,15 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
 
             outputs = model(inputs)
 
+            # print range of outputs
+            print(f"Output range: {outputs.min().item()} - {outputs.max().item()}")
+
             # check for nan values in the output and print patient number
             nan_mask = torch.isnan(outputs)
             nan_count = nan_mask.sum().item()
             if nan_count > 0:
                 print(f"Warning: Output contains {nan_count} NaN values for patient number: {patient_number}")
+            
 
             targets = torch.squeeze(targets, 1)
             loss = criterion(outputs, targets)
