@@ -108,7 +108,7 @@ def main():
     else:
         modelID = "correction_model"
         modality = "T1c_bias"
-        UMap = "modality_ensemble" # Choose from: modality_ensemble, deep_ensemble, dropout, test_time_augmentation, softmax
+        UMap = "softmax" # Choose from: modality_ensemble, deep_ensemble, dropout, test_time_augmentation, softmax
 
         print(f" Using MRI modality: {modality}, and uncertainty map: {UMap}")
 
