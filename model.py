@@ -32,6 +32,9 @@ class CorrectionUNet(nn.Module):
         self.dec4 = self.conv_block(64 + 32, 32, 2)
         self.dec5 = nn.Conv3d(32, out_channels, kernel_size=1)
 
+        # Initialize weights
+        self.apply(self._init_weights)
+
     def conv_block(self, in_channels, out_channels, num_conv, dropout=None):
         layers = []
         for i in range(num_conv):
@@ -69,3 +72,9 @@ class CorrectionUNet(nn.Module):
 
     def upsample(self, x, size):
         return F.interpolate(x, size=size[2:], mode='trilinear', align_corners=True)
+    
+    def _init_weights(self, m):
+        if isinstance(m, nn.Conv3d):
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)

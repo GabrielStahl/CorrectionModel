@@ -40,7 +40,7 @@ class_weights = torch.tensor([1.0, 1.0, 1.0, 1.0])
 
 # Model configuration
 in_channels = 3 # 3 input channels (original MRI, predicted segmentation, uncertainty map)
-out_channels = 5 # 5 classes (0-4): 0 = no change needed, 1 = change to outer tumor region, 2 = change to enhancing tumor, 3 = change to tumor core
+out_channels = 4 # 4 classes (0-3): 0 = Background, 1 = outer tumor region, 2 = enhancing tumor, 3 = tumor core
 dropout = 0.3
 
 # Data configuration
@@ -49,7 +49,7 @@ crop_size = (150, 180, 155)
 # Training configuration
 if environment == 'local':
     batch_size = 1
-    learning_rate = 0.01
+    learning_rate = 0.0001
     epochs = 30
 elif environment == 'cluster':
     batch_size = 1

@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
-from data_loader import CorrectionDataset_predictSeg
-from model import CorrectionUNet  
+from data_loader import CorrectionDataset
 from low_memory_model import UltraLightCorrectionUNet  
+from model import CorrectionUNet
 import config
 from utils import calculate_metrics, DiceLoss
 from torch.cuda.amp import autocast, GradScaler
@@ -113,8 +113,8 @@ def main():
         print(f" Using MRI modality: {modality}, and uncertainty map: {UMap}")
 
     # Load the datasets
-    train_dataset = CorrectionDataset_predictSeg("train_set", modality, UMap)
-    val_dataset = CorrectionDataset_predictSeg("val_set", modality, UMap)
+    train_dataset = CorrectionDataset("train_set", modality, UMap)
+    val_dataset = CorrectionDataset("val_set", modality, UMap)
 
     # Setup DDP and create distributed samplers if not in local environment
     if environment != 'local':
@@ -148,10 +148,10 @@ def main():
 
     # Create the model
     if environment == 'cluster': # CHANGE BACK IF MODEL IS NOT LEARNING WELL
-        model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
+        model = UltraLightCorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels)
         print("Using UltraLightCorrectionUNet model for low memory consumption")
     else:
-        model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)  # 3 input channels, 5 output classes (0-4)
+        model = CorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels)  
         print("Using UltraLightCorrectionUNet model")
         
     model = model.to(device)
