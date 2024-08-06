@@ -189,7 +189,7 @@ def main():
     
         # Save the model every 5 epochs
         if (epoch + 1) % 5 == 0 and (environment == 'local' or dist.get_rank() == 0):
-            save_path = f"{config.model_save_path_correctionModel}{modality}_{UMap}_{modelID}_epoch_{epoch+1}.pth"
+            save_path = f"{config.model_save_path}{modality}_{UMap}_{modelID}_epoch_{epoch+1}.pth"
             if environment != 'local':
                 torch.save(model.module.state_dict(), save_path)
             else:
@@ -198,7 +198,7 @@ def main():
 
     # Save the trained model
     if environment == 'local' or dist.get_rank() == 0:
-        save_path = f"{config.model_save_path_correctionModel}{modality}_{UMap}_{modelID}_final_epoch.pth"
+        save_path = f"{config.model_save_path}{modality}_{UMap}_{modelID}_final_epoch.pth"
         if environment != 'local':
             torch.save(model.module.state_dict(), save_path)
             print(f"Model saved to {save_path}")
