@@ -7,6 +7,9 @@ import torch
 
 environment = os.environ.get('ENVIRONMENT', 'local')  # Default to 'local' if the environment variable is not set
 
+# CHOOSE data subset
+data_subset = "train_set" # CHOOSE FROM: train_set, val_set, test_set
+
 if environment == 'local':
     root_dir = "/Users/Gabriel/MRes_Medical_Imaging/RESEARCH_PROJECT/DATA/" 
     train_dir = "/Users/Gabriel/MRes_Medical_Imaging/RESEARCH_PROJECT/DATA/train_data/"
@@ -25,11 +28,8 @@ elif environment == 'cluster':
     model_save_path = '/cluster/project2/UCSF_PDGM_dataset/BasicSeg/Checkpoints/'
     model_save_path_correctionModel = '/cluster/project2/UCSF_PDGM_dataset/CorrectionModel/Checkpoints/'
     ensemble_path = "/cluster/project2/UCSF_PDGM_dataset/BasicSeg/Checkpoints/modality_ensemble/"
-    output_dir = "/cluster/project2/UCSF_PDGM_dataset/UCSF-PDGM-v3/predictions_test_set/"
+    output_dir = f"/cluster/project2/UCSF_PDGM_dataset/UCSF-PDGM-v3/predictions_{data_subset}/"
     print('Environment is: cluster')
-
-# CHOOSE data subset
-data_subset = "train_set" # CHOOSE FROM: train_set, val_set, test_set
 
 # CHOOSE class weights for weighted DiceLoss calculation
 #class_weights = torch.tensor([0.1, 3.4, 3.4, 0.1, 3.0])

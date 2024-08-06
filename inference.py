@@ -105,8 +105,8 @@ def main():
     # Set the model to evaluation mode
     model.eval()
 
-    # CHOOSE data subset
-    data_subset = "val_set" # CHOOSE FROM: train_set, val_set, test_set
+    # CHOOSE data subset to predict on
+    data_subset = config.data_subset # CHOOSE FROM: train_set, val_set, test_set
 
     # Set data directory
     if data_subset == "train_set":
