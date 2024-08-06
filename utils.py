@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+import config
 
 class DiceLoss(nn.Module):
     """
@@ -70,7 +71,7 @@ def calculate_metrics(pred, target, smooth=1e-5):
     avg_f1 (torch.Tensor): Average F1 score across all classes
     avg_dice (torch.Tensor): Average Dice coefficient across all classes
     """
-    num_classes = 5
+    num_classes = config.out_channels
     precision = torch.zeros(num_classes, device=pred.device)
     recall = torch.zeros(num_classes, device=pred.device)
     f1 = torch.zeros(num_classes, device=pred.device)

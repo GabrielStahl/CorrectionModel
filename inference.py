@@ -29,7 +29,6 @@ class CorrectionInference:
             1: 2,  # Outer tumor region
             2: 4,  # Enhancing tumor
             3: 1,  # Tumor core
-            4: 6   # No change needed
         }
         map_func = np.vectorize(lambda x: class_to_intensity[x])
         correction_mask = map_func(output_numpy).astype(np.uint8)
@@ -60,7 +59,7 @@ class CorrectionInference:
         patient_numbers = []
 
         with torch.no_grad():
-            for input_tensor, patient_number in tqdm(data_loader):
+            for input_tensor, _, patient_number in tqdm(data_loader): # ignore target image
                 input_tensor = input_tensor.to(device)
                 output = self.model(input_tensor)
                 
@@ -86,15 +85,15 @@ def main():
 
     # Create the model
     if environment == "local":
-        model = UltraLightCorrectionUNet(in_channels=3, out_channels=5)
+        model = UltraLightCorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels)
     else:
-        model = UltraLightCorrectionUNet(in_channels=3, out_channels=5) # after having solved memory issues: use CorrectionUNet
+        model = UltraLightCorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels) # after having solved memory issues: use CorrectionUNet
         
     model.to(device)
 
     # Load the trained model weights
-    weights = "T1c_bias_modality_ensemble_correction_model_epoch_65.pth" # best epoch
-    model_save_path = os.path.join(config.model_save_path_correctionModel, weights)
+    weights = "T1c_bias_softmax_correction_model_epoch_10.pth" # best epoch
+    model_save_path = os.path.join(config.model_save_path, weights)
     if os.path.exists(model_save_path):
         model.load_state_dict(torch.load(model_save_path, map_location=device))
         print(f"Loaded trained model weights from: {model_save_path}")

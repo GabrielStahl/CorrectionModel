@@ -148,11 +148,11 @@ def main():
 
     # Create the model
     if environment == 'cluster': # CHANGE BACK IF MODEL IS NOT LEARNING WELL
-        model = UltraLightCorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels)
-        print("Using UltraLightCorrectionUNet model for low memory consumption")
+        model = CorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels)
+        print("Using CorrectionUNet model")
     else:
         model = CorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels)  
-        print("Using UltraLightCorrectionUNet model")
+        print("Using CorrectionUNet model")
         
     model = model.to(device)
     print(f"model moved to device: {device} with rank: {rank}")
@@ -163,7 +163,7 @@ def main():
 
     # Loss function and optimizer
     loss_weights = config.class_weights
-    criterion = DiceLoss(class_weights=loss_weights, ignore_background=True)  
+    criterion = DiceLoss(class_weights=loss_weights, ignore_background=False)  
     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
 
     # Create the GradScaler
