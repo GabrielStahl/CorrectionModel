@@ -68,7 +68,7 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
         for inputs, targets, patient_number in val_dataloader: # ignore third argument, which is just the patient number
             inputs, targets = inputs.to(device), targets.to(device)
 
-            outputs = model(inputs)
+            outputs = model(inputs)            
             targets = torch.squeeze(targets, 1)
             loss = criterion(outputs, targets)
 
