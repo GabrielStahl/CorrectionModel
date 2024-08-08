@@ -1,14 +1,37 @@
-import torch.nn as nn
-import torch.optim as optim
 import os
 import torch
 
-# Data configuration
-
+# Configuration
 environment = os.environ.get('ENVIRONMENT', 'local')  # Default to 'local' if the environment variable is not set
 
-# CHOOSE data subset
+# CHOOSE 
 data_subset = "train_set" # CHOOSE FROM: train_set, val_set, test_set
+UMap = "softmax" # CHOOSE FROM: modality_ensemble, softmax, dropout, deep_ensemble, test_time_augmentation
+ignore_background = False
+
+# CHOOSE class weights for weighted DiceLoss calculation
+class_weights = torch.tensor([0.1, 1.5, 1.0, 1.5])
+
+# all 1
+#class_weights = torch.tensor([1.0, 1.0, 1.0, 1.0])
+
+# Model configuration
+in_channels = 3 # 3 input channels (original MRI, predicted segmentation, uncertainty map)
+out_channels = 4 # 4 classes (0-3): 0 = Background, 1 = outer tumor region, 2 = enhancing tumor, 3 = tumor core
+dropout = 0.3
+
+# Data configuration
+crop_size = (150, 180, 155)
+
+# Training configuration
+if environment == 'local':
+    batch_size = 1
+    learning_rate = 0.0001
+    epochs = 30
+elif environment == 'cluster':
+    batch_size = 1
+    learning_rate = 0.0001
+    epochs = 100
 
 if environment == 'local':
     root_dir = "/Users/Gabriel/MRes_Medical_Imaging/RESEARCH_PROJECT/DATA/" 
@@ -28,28 +51,3 @@ elif environment == 'cluster':
     ensemble_path = "/cluster/project2/UCSF_PDGM_dataset/BasicSeg/Checkpoints/modality_ensemble/"
     output_dir = f"/cluster/project2/UCSF_PDGM_dataset/UCSF-PDGM-v3/predictions_{data_subset}/"
     print('Environment is: cluster')
-
-# CHOOSE class weights for weighted DiceLoss calculation
-class_weights = torch.tensor([0.1, 1.0, 1.0, 2.0])
-
-# all 1
-#class_weights = torch.tensor([1.0, 1.0, 1.0, 1.0])
-
-
-# Model configuration
-in_channels = 3 # 3 input channels (original MRI, predicted segmentation, uncertainty map)
-out_channels = 4 # 4 classes (0-3): 0 = Background, 1 = outer tumor region, 2 = enhancing tumor, 3 = tumor core
-dropout = 0.3
-
-# Data configuration
-crop_size = (150, 180, 155)
-
-# Training configuration
-if environment == 'local':
-    batch_size = 1
-    learning_rate = 0.0001
-    epochs = 30
-elif environment == 'cluster':
-    batch_size = 1
-    learning_rate = 0.0001
-    epochs = 100

@@ -22,7 +22,7 @@ def train(model, train_dataloader, val_dataloader, optimizer, criterion, device,
     running_f1 = 0.0
     running_dice = 0.0
 
-    for inputs, targets, patient_number in train_dataloader: # ignore third argument, which is just the patient number
+    for inputs, targets, patient_number in train_dataloader: 
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
 
@@ -108,7 +108,7 @@ def main():
     else:
         modelID = "correction_model"
         modality = "T1c_bias"
-        UMap = "softmax" # Choose from: modality_ensemble, deep_ensemble, dropout, test_time_augmentation, softmax
+        UMap = config.UMap
 
         print(f" Using MRI modality: {modality}, and uncertainty map: {UMap}")
 
@@ -163,7 +163,7 @@ def main():
 
     # Loss function and optimizer
     loss_weights = config.class_weights
-    criterion = DiceLoss(class_weights=loss_weights, ignore_background=False)  
+    criterion = DiceLoss(class_weights=loss_weights, ignore_background=config.ignore_background)  
     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
 
     # Create the GradScaler

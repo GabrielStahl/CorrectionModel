@@ -85,14 +85,14 @@ def main():
 
     # Create the model
     if environment == "local":
-        model = UltraLightCorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels)
+        model = CorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels)
     else:
-        model = UltraLightCorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels) # after having solved memory issues: use CorrectionUNet
+        model = CorrectionUNet(in_channels=config.in_channels, out_channels=config.out_channels) # after having solved memory issues: use CorrectionUNet
         
     model.to(device)
 
     # Load the trained model weights
-    weights = "T1c_bias_modality_ensemble_correction_model_epoch_5.pth" # best epoch
+    weights = "T1c_bias_softmax_correction_model_epoch_50.pth" # best epoch
     model_save_path = os.path.join(config.model_save_path, weights)
     if os.path.exists(model_save_path):
         model.load_state_dict(torch.load(model_save_path, map_location=device))
