@@ -48,7 +48,7 @@ class DiceLoss(nn.Module):
             
             dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
             
-            class_weight = self.class_weights[class_idx - start_class]
+            class_weight = self.class_weights[class_idx]
 
             total_loss += (1 - dice) * class_weight
             total_weights += class_weight
@@ -77,11 +77,11 @@ def calculate_metrics(pred, target, smooth=1e-5):
     f1 = torch.zeros(num_classes, device=pred.device)
     dice = torch.zeros(num_classes, device=pred.device)
     
-    for class_idx in range(num_classes):
+    for class_idx in range(1, num_classes): # Always ignore background class
         pred_class = (pred == class_idx).float()
         target_class = (target == class_idx).float()
         
-        intersection = (pred_class * target_class).sum()
+        intersection = (pred_class * target_class).sum() # logical AND operation
         pred_sum = pred_class.sum()
         target_sum = target_class.sum()
         

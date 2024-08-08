@@ -3,7 +3,6 @@ import numpy as np
 import nibabel as nib
 import torch
 from model import CorrectionUNet
-from low_memory_model import UltraLightCorrectionUNet
 import config
 import torch.nn as nn
 from data_loader import CorrectionDataset
@@ -92,7 +91,7 @@ def main():
     model.to(device)
 
     # Load the trained model weights
-    weights = "T1c_bias_softmax_correction_model_epoch_50.pth" # best epoch
+    weights = "T1c_bias_softmax_correction_model_epoch_20.pth" # best epoch
     model_save_path = os.path.join(config.model_save_path, weights)
     if os.path.exists(model_save_path):
         model.load_state_dict(torch.load(model_save_path, map_location=device))

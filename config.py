@@ -7,10 +7,10 @@ environment = os.environ.get('ENVIRONMENT', 'local')  # Default to 'local' if th
 # CHOOSE 
 data_subset = "train_set" # CHOOSE FROM: train_set, val_set, test_set
 UMap = "softmax" # CHOOSE FROM: modality_ensemble, softmax, dropout, deep_ensemble, test_time_augmentation
-ignore_background = False
+ignore_background = True
 
 # CHOOSE class weights for weighted DiceLoss calculation
-class_weights = torch.tensor([0.1, 1.5, 1.0, 1.5])
+class_weights = torch.tensor([0.2, 1.0, 1.5, 1.5]) 
 
 # all 1
 #class_weights = torch.tensor([1.0, 1.0, 1.0, 1.0])
