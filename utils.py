@@ -17,7 +17,6 @@ class DiceLoss(nn.Module):
         target (torch.Tensor): Ground truth labels, torch.Size([1, 150, 180, 155]) with class indices [0,1,2,3,4] at dim 0
 
         ignore_background (bool): Whether to ignore the background class (class 0), default is False
-        class_weights (torch.Tensor or None): Optional tensor of class weights to apply to each class's Dice score, default is None
 
     Returns:
         torch.Tensor: Normalized weighted average Dice loss, a scalar value in the range [0, 1]
@@ -31,7 +30,7 @@ class DiceLoss(nn.Module):
         pred = pred.view(pred.size(0), pred.size(1), -1)
         target = target.view(target.size(0), -1)
 
-        start_class = 1 if self.ignore_background else 0
+        start_class = 1 # set to 0 to include background
         
         dice_scores = []
         
