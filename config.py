@@ -10,10 +10,10 @@ UMap = "softmax" # CHOOSE FROM: modality_ensemble, softmax, dropout, deep_ensemb
 ignore_background = True
 
 # CHOOSE class weights for weighted DiceLoss calculation
-class_weights = torch.tensor([0.2, 1.0, 1.5, 1.5]) 
+#class_weights = torch.tensor([0.2, 1.0, 1.5, 1.5]) 
 
 # all 1
-#class_weights = torch.tensor([1.0, 1.0, 1.0, 1.0])
+class_weights = torch.tensor([1.0, 1.0, 1.0, 1.0])
 
 # Model configuration
 in_channels = 3 # 3 input channels (original MRI, predicted segmentation, uncertainty map)

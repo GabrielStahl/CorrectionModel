@@ -4,7 +4,6 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from data_loader import CorrectionDataset
-from low_memory_model import UltraLightCorrectionUNet  
 from model import CorrectionUNet
 import config
 from utils import calculate_metrics, DiceLoss
