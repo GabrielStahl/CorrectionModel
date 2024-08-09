@@ -23,11 +23,8 @@ class DiceLoss(nn.Module):
         torch.Tensor: Normalized weighted average Dice loss, a scalar value in the range [0, 1]
     """
 
-    def __init__(self, smooth=1e-5, ignore_background=False, class_weights=None):
+    def __init__(self):
         super(DiceLoss, self).__init__()
-        self.smooth = smooth
-        self.ignore_background = ignore_background
-        self.class_weights = class_weights
 
     def forward(self, pred, target):
         pred = torch.softmax(pred, dim=1)
@@ -36,8 +33,7 @@ class DiceLoss(nn.Module):
 
         start_class = 1 if self.ignore_background else 0
         
-        total_loss = 0
-        total_weights = 0
+        dice_scores = []
         
         for class_idx in range(start_class, pred.size(1)):
             pred_class = pred[:, class_idx, ...]
@@ -46,16 +42,10 @@ class DiceLoss(nn.Module):
             intersection = (pred_class * target_class).sum() # logical AND operation
             union = pred_class.sum() + target_class.sum()
             
-            dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
-            
-            class_weight = self.class_weights[class_idx]
-
-            total_loss += (1 - dice) * class_weight
-            total_weights += class_weight
-
-        loss = total_loss / total_weights  # Normalize by total weights
+            dice = (2.0 * intersection + 1e-7) / (union + 1e-7)
+            dice_scores.append(dice)
         
-        return loss
+        return 1 - torch.mean(torch.stack(dice_scores))
 
 def calculate_metrics(pred, target, smooth=1e-5):
     """
